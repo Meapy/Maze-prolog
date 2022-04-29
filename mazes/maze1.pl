@@ -9,4 +9,4 @@ wall(4,3).
 mazeSize(5,5).
 
 start(pos(3,3)).
-goal(pos(1,5)).
+goal(pos(1,1)).
