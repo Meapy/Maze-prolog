@@ -1,19 +1,20 @@
-:- [mazes/maze1].
-%:- [mazes/maze2].
+%:- [mazes/maze1].
+:- [mazes/maze2].
 :- debug.
 :- [library(aggregate)].
 
 % movement in the maze 
 move(pos(_,_),up).
 move(pos(_,_),down).
-move(pos(_,_),left).
 move(pos(_,_),right).
+move(pos(_,_),left).
 
 % update functionality
 changePos(pos(X,Y),up,pos(X,Y_new)) :- Y_new is Y+1.
 changePos(pos(X,Y),down,pos(X,Y_new)) :- Y_new is Y-1.
 changePos(pos(X,Y),right,pos(X_new,Y)) :- X_new is X+1.
 changePos(pos(X,Y),left,pos(X_new,Y)) :- X_new is X-1.
+
 
 % check if the move is valid
 valid(pos(X,Y)) :-
@@ -32,7 +33,7 @@ dfs(Position,Visited,[Move,Path]) :-
     changePos(Position,Move,Next),
     valid(Next),
     \+member(Next,Visited),
-    print(Next),
+    print(Next), nl,
     dfs(Next,[Next|Visited],Path).
 
 solve_dfs(Path) :-
@@ -75,22 +76,19 @@ h(pos(X,Y),W):-
 move_cost(Position,Move,Cost):-
     move(Position,Move),
     changePos(Position,Move,Next),
-    %valid(Next),
+    valid(Next),
     h(Next,H),
     Cost is H.
-find_lowest(Position,Cost,Move):-
-    move_cost(Position,up,Cost_up),
-    move_cost(Position,down,Cost_down),
-    move_cost(Position,left,Cost_left),
-    move_cost(Position,right,Cost_right),
-    min_list([Cost_up,Cost_down,Cost_left,Cost_right],Cost),
-    (Cost == Cost_up -> Move = up;
-    (Cost == Cost_down -> Move = down;
-    (Cost == Cost_left -> Move = left;
-    (Cost == Cost_right -> Move = right)))).
+%function to find the lowest cost move
+lowest_cost(Position,Move,Cost):-
+    move_cost(Position,Move,Cost),
+    move_cost(Position,Move_new,Cost_new),
+    Cost_new > Cost.
 
-
-
+lowest_cost(Position,Move,Cost):-
+    move_cost(Position,Move,Cost),
+    move_cost(Position,Move_new,Cost_new),
+    Cost_new >= Cost.
 
 %a star algorithm to find the path from start to goal
 % using the manhattan distance heuristic and the weight of each pos
@@ -99,11 +97,12 @@ find_lowest(Position,Cost,Move):-
 astar(Position,_,[]) :-
     goal(Position).
 astar(Position,Visited,[Move,Path]) :-
-    find_lowest(Position,Cost,Move),
-    print(Cost),
+    lowest_cost(Position,Move,Cost),
     changePos(Position,Move,Next),
-    print(Next), nl,
     \+member(Next,Visited),
+    valid(Next),
+    print(Next),
+    print(Cost), nl,
     astar(Next,[Next|Visited],Path).
 astar(Path) :-
     start(Position),
